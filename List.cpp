@@ -1,12 +1,4 @@
-#include "list.h"
-
-#define CALLOC_AND_CHECK_PTR(type, list_field)          \
-list_field = (type*) calloc (elem_num, sizeof(type));   \
-if (NULL == list_field)                                 \
-{                                                       \
-    /*dump*/                                            \
-    return;                                             \
-}             
+#include "list.h"         
 
 void ListCtor (list* lst, size_t elem_num)
 {
@@ -14,48 +6,83 @@ void ListCtor (list* lst, size_t elem_num)
     {
         elem_num = 10;
     }
-    CALLOC_AND_CHECK_PTR(list_elem, lst->start_ptr)
+    lst->start_ptr = (list_elem*) calloc (elem_num, sizeof(list_elem));
+    if (NULL == lst->start_ptr)                                 
+    {                                                       
+        /*dump*/                                            
+        return;                                             
+    }
 
     lst->capacity = elem_num;
 
-    lst->start_ptr->next = ZERO;
-    lst->start_ptr->prev = ZERO;
-
+    DATA(0) = POISON;
+    NEXT(0) = ZERO;
+    PREV(0) = ZERO;
     for (int i  = 1 ; i < elem_num - 1 ; i++)
     {
-        (lst->start_ptr + i)->next = (i + 1);
-        (lst->start_ptr + i)->prev = -1;
+        NEXT(i) = (i + 1);
+        PREV(i) = -1;
     }
-    (lst->start_ptr + elem_num - 1)->next = 0;
-    (lst->start_ptr + elem_num - 1)->prev = -1;
+    NEXT(elem_num - 1) = 0;
+    PREV(elem_num - 1) = -1;
 }
 
 void ListInsert (list* lst, index_t pr_i, elem_t new_elem)
 {
     index_t new_free = lst->start_ptr[lst->free].next;
+
     if (pr_i > 0)
     {
-        lst->start_ptr[lst->free].data = new_elem;
-        lst->start_ptr[lst->free].next = lst->start_ptr[pr_i].next;
-        lst->start_ptr[lst->free].prev = pr_i;
+        DATA(lst->free) = new_elem;
+        NEXT(lst->free) = NEXT(pr_i);
+        PREV(lst->free) = pr_i;
 
-        lst->start_ptr[lst->start_ptr[pr_i].next].prev = lst->free;
         lst->start_ptr[pr_i].next = lst->free;
-    }
-    if (pr_i == 0)
-    {
-        lst->start_ptr[lst->free].data = new_elem;
-        lst->start_ptr[lst->free].next = lst->head;
-        lst->start_ptr[lst->free].prev = ZERO;
 
-        if (lst->head > 0)
+        if (lst->tail != pr_i)//tail
         {
-            lst->start_ptr[lst->head].prev = lst->free;
+           PREV(NEXT(pr_i)) = lst->free; 
         }
+        else
+        {
+            lst->tail = lst->free;
+        }
+    }
+    if (pr_i == 0)//head
+    {
+        DATA(lst->free) = new_elem;
+        NEXT(lst->free) = lst->head;
+        PREV(lst->free) = ZERO;
 
         lst->head = lst->free;
     }
+
     lst->free = new_free;
+}
+
+void ListDelete (list* lst, index_t del)
+{
+    DATA(del) = POISON;
+
+    if (del != lst->head) //head
+    {
+        NEXT(PREV(del)) = NEXT(del);
+    }
+    else
+    {
+        lst->head = NEXT(del);
+    }
+    if (del != lst->tail)//tail
+    {
+        PREV(NEXT(del)) = PREV(del);
+    }
+    else
+    {
+        lst->tail = PREV(del);
+    }
+
+    NEXT(del) = lst->free;
+    PREV(del) = -1;
 }
 
 void ListDtor (list* lst)

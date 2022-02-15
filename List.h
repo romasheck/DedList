@@ -9,8 +9,10 @@ typedef int elem_t;
 typedef int index_t;
 #define FORMAT_LIST_INDEX "%d"
 
+#undef POISON
 #define POISON 1488
 
+#undef ZERO
 #define ZERO 0
 
 struct  list_elem
@@ -19,7 +21,6 @@ struct  list_elem
     elem_t data = 1488;
     index_t next;
 };
-
 
 struct list 
 {
@@ -31,9 +32,21 @@ struct list
     index_t     tail = 0;
 };
 
+#undef TAIL
+#define TAIL lst->tail
+
+#undef PREV
+#undef DATA
+#undef NEXT
+#define PREV(i) lst->start_ptr[i].prev
+#define DATA(i) lst->start_ptr[i].data
+#define NEXT(i) lst->start_ptr[i].next
+
 void            ListCtor            (list* lst, size_t elem_num);
 
 void            ListInsert          (list* lst, index_t pr_i, elem_t new_elem);
+
+void            ListDelete          (list* lst, index_t del_i);
 
 void            ListDtor            (list *lst);
 
