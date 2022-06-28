@@ -9,8 +9,9 @@ void ListCtor (list* lst, size_t elem_num)
     lst->start_ptr = (list_elem*) calloc (elem_num, sizeof(list_elem));
     if (NULL == lst->start_ptr)                                 
     {                                                       
-        /*dump*/                                            
-        return;                                             
+        /*dump*/
+        printf("LIST START PTR IS NULL (PTR CALLOCATION ERROR)!!!!!!!!!");
+        return;
     }
 
     lst->capacity = elem_num;
@@ -18,9 +19,10 @@ void ListCtor (list* lst, size_t elem_num)
     DATA(0) = POISON;
     NEXT(0) = ZERO;
     PREV(0) = ZERO;
-    for (int i  = 1 ; i < elem_num - 1 ; i++)
+    for (int i  = 1 ; i < elem_num ; i++)
     {
         NEXT(i) = (i + 1);
+        DATA(i) = POISON;
         PREV(i) = -1;
     }
     NEXT(elem_num - 1) = 0;
@@ -29,35 +31,39 @@ void ListCtor (list* lst, size_t elem_num)
 
 void ListInsert (list* lst, index_t pr_i, elem_t new_elem)
 {
-    index_t new_free = lst->start_ptr[lst->free].next;
+    index_t new_free = NEXT(lst->free);
 
-    if (pr_i > 0)
+    if (pr_i > ZERO)
     {
-        DATA(lst->free) = new_elem;
-        NEXT(lst->free) = NEXT(pr_i);
+        DATA(lst->free) = new_elem;//
+        NEXT(lst->free) = NEXT(pr_i);//
         PREV(lst->free) = pr_i;
 
-        lst->start_ptr[pr_i].next = lst->free;
-
-        if (lst->tail != pr_i)//tail
+        if (lst->tail != pr_i)
         {
            PREV(NEXT(pr_i)) = lst->free; 
+           
         }
-        else
+        else//tail
         {
             lst->tail = lst->free;
         }
+
+        NEXT(pr_i) = lst->free;
     }
-    if (pr_i == 0)//head
+    if (pr_i == ZERO)//head
     {
         DATA(lst->free) = new_elem;
         NEXT(lst->free) = lst->head;
         PREV(lst->free) = ZERO;
 
+        PREV(lst->head) = lst->free;
+
         lst->head = lst->free;
     }
 
     lst->free = new_free;
+    lst->size++;
 }
 
 void ListDelete (list* lst, index_t del)
@@ -82,7 +88,9 @@ void ListDelete (list* lst, index_t del)
     }
 
     NEXT(del) = lst->free;
+    lst->free = del;
     PREV(del) = -1;
+    lst->size--;
 }
 
 void ListDtor (list* lst)
@@ -90,3 +98,71 @@ void ListDtor (list* lst)
     free(lst->start_ptr);
     free(lst);
 }
+
+#undef FPRINT
+#undef COMMA
+#undef FPRINT_ELEM 
+#define FPRINT(data) fprintf(log_file, data); 
+#define COMMA ,
+#define FPRINT_ELEM(j)                  \
+FPRINT("    \"%d \\n " COMMA j)         \
+FPRINT("PREV = ")                       \
+FPRINT(FORMAT_LIST_INDEX COMMA PREV(j)) \
+FPRINT(" \\n ")                         \
+FPRINT("DATA = ")                       \
+FPRINT(FORMAT_LIST_ELEM COMMA DATA(j))  \
+FPRINT(" \\n ")                         \
+FPRINT("NEXT = ")                       \
+FPRINT(FORMAT_LIST_INDEX COMMA NEXT(j)) \
+FPRINT(" \\n ")                         \
+FPRINT("\"")
+
+void ListDump (list* lst)
+{
+    FILE* log_file = fopen("log_file.txt", "w");
+
+    //FPRINT("<graph>")
+    FPRINT("digraph G{\n")
+    FPRINT("    graph [ rankdir=UD ]\n")
+
+    for (index_t i = 0; i < lst->capacity - 1; i++)
+    {
+        FPRINT_ELEM(i)
+        FPRINT(" -> ")
+        FPRINT_ELEM(i + 1)
+        FPRINT(" [ style=invis ]")
+        FPRINT("\n")
+    }
+
+    index_t cur_i = lst->head;
+    while (NEXT(cur_i) != 0)
+    {
+        FPRINT_ELEM(cur_i)
+        FPRINT(" -> ")
+        FPRINT_ELEM(NEXT(cur_i))
+        FPRINT(" [ color = blue ]")
+        cur_i = NEXT(cur_i);
+        FPRINT("\n")
+    }
+
+    cur_i = lst->free;
+    while (NEXT(cur_i)!= 0)
+    {
+        FPRINT_ELEM(cur_i)
+        FPRINT(" -> ")
+        FPRINT_ELEM(NEXT(cur_i))
+        FPRINT(" [ color = red ]")
+        cur_i = NEXT(cur_i);
+        FPRINT("\n")
+    }
+    FPRINT("}")
+    //FPRINT("</graph>")
+
+    fclose(log_file);
+
+    system ("\"C:/Program Files/Graphviz/bin/dot.exe\" -Tpng log_file.txt -o ListLog.png");
+}
+
+#undef FPRINT
+#undef COMMA
+#undef FPRINT_ELEM

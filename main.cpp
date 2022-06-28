@@ -1,5 +1,7 @@
 #include "List.h"
 
+//LIST USAGE EXAMPLE
+
 int main ()
 {
     list ABOBA;
@@ -7,11 +9,16 @@ int main ()
 
     ListCtor (lst, 10);
 
-    ListInsert(lst, 0 , 10);
+    ListInsert(lst, ZERO , 10);
     ListInsert(lst, lst->head , 40);
-    ListInsert(lst, 0 , 35);
+    ListInsert(lst, 1 , 60);
+    ListInsert(lst, lst->tail , 40);
+    ListDelete(lst, 2);
+    ListInsert(lst, ZERO , 35);
 
-    printf ("%d", DATA(lst->head));
+    ListDump(lst);
+
+    ListDtor (lst);
 
     return 0;
-}
+}   
