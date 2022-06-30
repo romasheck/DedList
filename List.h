@@ -9,9 +9,6 @@ typedef int elem_t;
 typedef int index_t;
 #define FORMAT_LIST_INDEX "%d"
 
-const int ZERO = 0;
-const int POISON = 1488;
-
 struct list_elem
 {
     index_t prev;
@@ -21,7 +18,7 @@ struct list_elem
 
 struct list
 {
-    list_elem*  start_ptr;
+    list_elem*  base;
     size_t      size = 0;
     size_t      capacity;
     index_t     free = 1;
@@ -35,9 +32,14 @@ struct list
 #undef PREV
 #undef DATA
 #undef NEXT
-#define PREV(i) lst->start_ptr[i].prev
-#define DATA(i) lst->start_ptr[i].data
-#define NEXT(i) lst->start_ptr[i].next
+#define PREV(i) lst->base[i].prev
+#define DATA(i) lst->base[i].data
+#define NEXT(i) lst->base[i].next
+
+#undef BASE
+#undef POISON
+#define BASE 0
+#define POISON 1488
 
 void            ListCtor            (list* lst, size_t elem_num);
 
@@ -48,5 +50,9 @@ void            ListDelete          (list* lst, index_t del_i);
 void            ListDtor            (list *lst);
 
 void            ListDump            (list* lst);
+
+index_t         ListSearch          (elem_t desired, list* lst);
+
+#define PRINT_LINE printf("I am in line %d in function %s\n", __LINE__, __FUNCTION__);
 
 #endif 
