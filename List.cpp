@@ -4,10 +4,11 @@ void ListCtor (list* lst, size_t elem_num)
 {
     if (elem_num < 10 )
     {
-        elem_num = 10;
+        //elem_num = 10;
     }
-    lst->start_ptr = (list_elem*) calloc (elem_num, sizeof(list_elem));
-    if (NULL == lst->start_ptr)                                 
+
+    lst->base = (list_elem*) calloc (elem_num, sizeof(list_elem));
+    if (NULL == lst->base)                                 
     {                                                       
         /*dump*/
         printf("LIST START PTR IS NULL (PTR CALLOCATION ERROR)!!!!!!!!!");
@@ -17,8 +18,8 @@ void ListCtor (list* lst, size_t elem_num)
     lst->capacity = elem_num;
 
     DATA(0) = POISON;
-    NEXT(0) = ZERO;
-    PREV(0) = ZERO;
+    NEXT(0) = BASE;
+    PREV(0) = BASE;
     for (int i  = 1 ; i < elem_num ; i++)
     {
         NEXT(i) = (i + 1);
@@ -33,7 +34,7 @@ void ListInsert (list* lst, index_t pr_i, elem_t new_elem)
 {
     index_t new_free = NEXT(lst->free);
 
-    if (pr_i > ZERO)
+    if (pr_i > BASE)
     {
         DATA(lst->free) = new_elem;//
         NEXT(lst->free) = NEXT(pr_i);//
@@ -51,11 +52,11 @@ void ListInsert (list* lst, index_t pr_i, elem_t new_elem)
 
         NEXT(pr_i) = lst->free;
     }
-    if (pr_i == ZERO)//head
+    if (pr_i == BASE)//head
     {
         DATA(lst->free) = new_elem;
         NEXT(lst->free) = lst->head;
-        PREV(lst->free) = ZERO;
+        PREV(lst->free) = BASE;
 
         PREV(lst->head) = lst->free;
 
@@ -95,7 +96,7 @@ void ListDelete (list* lst, index_t del)
 
 void ListDtor (list* lst)
 {
-    free(lst->start_ptr);
+    free(lst->base);
     free(lst);
 }
 
@@ -166,3 +167,33 @@ void ListDump (list* lst)
 #undef FPRINT
 #undef COMMA
 #undef FPRINT_ELEM
+
+index_t ListSearch (elem_t desired, list* lst)
+{
+    if (DATA(lst->head) == desired)
+    {
+        return lst->head;
+    }
+
+    index_t answer = lst->head;
+
+    while(1)
+    { 
+        if (DATA(NEXT(answer)) != desired)
+        {
+            answer = NEXT(answer);
+        }
+        else
+        {
+            return NEXT(answer);
+        }
+
+        if (answer == 0)
+        {
+            break;
+        }
+    } 
+
+    return BASE;
+}
+
