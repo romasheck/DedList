@@ -9,12 +9,12 @@ int main ()
 
     ListCtor (lst, 10);
 
-    ListInsert(lst, ZERO , 10);
+    ListInsert(lst, BASE, 10);
     ListInsert(lst, lst->head , 40);
     ListInsert(lst, 1 , 60);
     ListInsert(lst, lst->tail , 40);
     ListDelete(lst, 2);
-    ListInsert(lst, ZERO , 35);
+    ListInsert(lst, BASE, 35);
 
     ListDump(lst);
 
